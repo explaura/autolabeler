@@ -12,8 +12,8 @@ For example,
 
 ```yaml
 feature: ["feat", "ft"]
-documentation: doc
-refactor: refactor
+documentation: ["doc*"]
+refactor: ["refactor"]
 ```
 
 Then if a pull request is opened that has `scripts/widget.js` modified, then the frontend label will be added.
