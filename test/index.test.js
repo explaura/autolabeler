@@ -1,21 +1,23 @@
-const {createRobot} = require('probot')
+const { Application } = require('probot')
 const plugin = require('..')
 
 const config = `
-feature: ["feat", "ft"]
-documentation: doc
+feature: ["feat*", "feature*"]
+bug: ["fix*", "bug*", "bugfix*"]
+maintenance: ["chore*"]
+documentation: ["doc*", "docs*"]
 `
 
 describe('autolabeler', () => {
-  let robot
+  let app
   let github
 
   beforeEach(() => {
-    // Create a new Robot to run our plugin
-    robot = createRobot()
+    // Create a new App to run our plugin
+    app = new Application()
 
     // Load the plugin
-    plugin(robot)
+    plugin(app)
 
     // Mock out the GitHub API
     github = {
@@ -34,12 +36,22 @@ describe('autolabeler', () => {
             data: [
               {
                 commit: {
-                  message: 'feat(feature): a commit message'
+                  message: 'feat(feature): a feature commit message'
                 }
               },
               {
                 commit: {
-                  message: 'doc(readme): a commit message'
+                  message: 'doc(readme): a documentation commit message'
+                }
+              },
+              {
+                commit: {
+                  message: 'something(random): a random commit message'
+                }
+              },
+              {
+                commit: {
+                  message: 'feat(feature): another feature commit message'
                 }
               }
             ]
@@ -53,14 +65,14 @@ describe('autolabeler', () => {
     }
 
     // Mock out GitHub App authentication and return our mock client
-    robot.auth = () => Promise.resolve(github)
+    app.auth = () => Promise.resolve(github)
   })
 
   describe('pull_request.opened event', () => {
     const event = require('./fixtures/pull_request.opened')
 
     test('adds label', async () => {
-      await robot.receive(event)
+      await app.receive(event)
 
       expect(github.repos.getContent).toHaveBeenCalledWith({
         owner: 'robotland',
